@@ -1,3 +1,4 @@
+import 'package:chatting_app_flutter_firebase/services/auth.dart';
 import 'package:chatting_app_flutter_firebase/ui/screens/home_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -82,6 +83,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
   void onTapSignInButton(){
-    Navigator.pushNamedAndRemoveUntil(context, HomeScreen.name, (predicate)=>false);
+    AuthMethods().signInWithGoogle(context);
   }
 }
