@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "546803809890",
+    "project_id": "alapchat-e2d90",
+    "storage_bucket": "alapchat-e2d90.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546803809890:android:63e0649e10641fc0111b3b",
+        "android_client_info": {
+          "package_name": "com.example.chatting_app_flutter_firebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIGxfz0UhD0ys51-SJX1xOUETIBTCcbbI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
