@@ -14,7 +14,6 @@ class ChattingApp extends StatelessWidget {
       routes: {
         OnboardingScreen.name:(context)=>OnboardingScreen(),
         HomeScreen.name:(context)=>HomeScreen(),
-        ChatScreen.name:(context)=>ChatScreen()
       },
     );
   }

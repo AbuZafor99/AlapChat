@@ -1,15 +1,78 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:random_string/random_string.dart';
+
+import '../../services/database.dart';
+import '../../services/shared_pref.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
-  static const String name = '/char-screen';
+  String name, profileUrl,userName;
+  ChatScreen({required this.name, required this.profileUrl, required this.userName});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+
+  String? myUserName, myName, myEmail, myPicture, chatRoomId, messageId;
+  TextEditingController messageTEController=TextEditingController();
+
+  getDataFromSharedPref()async{
+    myUserName= await SharedPreferenceHelper().getUserName();
+    myName=await SharedPreferenceHelper().getUserDisplayName();
+    myEmail=await SharedPreferenceHelper().getUserEmail();
+    myPicture= await SharedPreferenceHelper().getUserImage();
+
+    chatRoomId=getChatRoomIdByUserName(widget.userName, myUserName!);
+    setState(() {});
+  }
+  @override
+  void initState() {
+    getDataFromSharedPref();
+    super.initState();
+  }
+  getChatRoomIdByUserName(String a, String b){
+    if(a.substring(0,1).codeUnitAt(0)>b.substring(0,1).codeUnitAt(0)){
+      return "$b\_$a";
+    }else{
+      return "$a\_$b";
+    }
+  }
+
+  addMessage(bool sendClicked) async {
+    if (messageTEController.text != "") {
+      String message=messageTEController.text;
+      messageTEController.text="";
+
+      DateTime now =DateTime.now();
+      String formattedDate=DateFormat("h:mma").format(now);
+
+      Map<String,dynamic> messageInfoMap={
+        "message":message,
+        "sendBy":myUserName,
+        "ts":formattedDate,
+        "time":FieldValue.serverTimestamp(),
+        "image":myPicture,
+      };
+      messageId=randomAlphaNumeric(15);
+      await DatabaseMethods().addMessage(chatRoomId!, messageId!, messageInfoMap).then((value){
+          Map<String,dynamic> lastMessageInfoMap={
+            "lastMessage":message,
+            "lastMessageSendTs":formattedDate,
+            "time":FieldValue.serverTimestamp(),
+            "lastMessageSendBy":myUserName
+          };
+          DatabaseMethods().updateLastMessageSend(chatRoomId!, lastMessageInfoMap);
+          if(sendClicked){
+            message="";
+          }
+        }
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   SizedBox(width: MediaQuery.of(context).size.width / 5.2),
                   Text(
-                    "Aminul Islam",
+                    widget.name,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -134,6 +197,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                                 child: TextField(
+                                  controller: messageTEController,
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
                                     hint: Text("Write a message...",),
@@ -143,16 +207,21 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                           ),
                           const SizedBox(width: 10,),
-                          Container(
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Color(0xff703eff),
-                              borderRadius: BorderRadius.circular(60),
-                            ),
-                            child: Icon(
-                              Icons.send,
-                              size: 30,
-                              color: Colors.white,
+                          GestureDetector(
+                            onTap: () {
+                              addMessage(true);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Color(0xff703eff),
+                                borderRadius: BorderRadius.circular(60),
+                              ),
+                              child: Icon(
+                                Icons.send,
+                                size: 30,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ],

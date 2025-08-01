@@ -1,5 +1,6 @@
 import 'package:chatting_app_flutter_firebase/services/database.dart';
 import 'package:chatting_app_flutter_firebase/services/shared_pref.dart';
+import 'package:chatting_app_flutter_firebase/ui/screens/home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -56,13 +57,14 @@ class AuthMethods {
             content: Text(
               "Registration successful.",
               style: TextStyle(
-                color: Colors.black,
+                color: Colors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
         );
+        Navigator.pushNamed(context, HomeScreen.name);
       });
     }
   }
