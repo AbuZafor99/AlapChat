@@ -33,8 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
   }
 
-  var quaryResultSet = [];
-  var tempSearchStore = [];
+  
 
   getChatRoomIdByUserName(String a, String b) {
     if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
@@ -44,36 +43,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  initialSearch(value) {
-    if (value.length == 0) {
-      setState(() {
-        quaryResultSet = [];
-        tempSearchStore = [];
-      });
-      setState(() {
-        search = true;
-      });
+  Stream? searchResultsStream;
 
-      var capitalizedValue =
-          value.substring(0, 1).toUpperCase() + value.substring(1);
-      if (quaryResultSet.isEmpty && value.length == 1) {
-        DatabaseMethods().Search(value).then((QuerySnapshot docs) {
-          for (int i = 0; i < docs.docs.length; i++) {
-            quaryResultSet.add(docs.docs[i].data());
-          }
-        });
-      } else {
-        tempSearchStore = [];
-        quaryResultSet.forEach((element) {
-          if (element['username'].startsWith(capitalizedValue)) {
-            setState(() {
-              tempSearchStore.add(element);
-            });
-          }
-        });
-      }
+  initiateSearch() {
+    if (searchTEController.text.isNotEmpty) {
+      setState(() {
+        searchResultsStream =
+            DatabaseMethods().searchUsers(searchTEController.text);
+      });
     }
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  "Zafor",
+                  myName.toString(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -183,37 +164,49 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 30),
-                    search
-                        ? ListView(
-                            padding: EdgeInsets.only(left: 10, right: 10),
+                    Material(
+                      elevation: 1,
+                      shadowColor: Color(0xffb8b7ce),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xffececf8),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: TextField(
+                          controller: searchTEController,
+                          onChanged: (value) {
+                            initiateSearch();
+                          },
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            prefixIcon: Icon(Icons.search),
+                            hintText: "Search Username...",
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    StreamBuilder(
+                      stream: searchResultsStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final filteredDocs = snapshot.data!.docs.where((doc) => doc['userName'] != myUserName).toList();
+                          return ListView.builder(
+                            padding: EdgeInsets.zero,
                             primary: false,
                             shrinkWrap: true,
-                            children: tempSearchStore.map((element) {
-                              return buildResultCard(element);
-                            }).toList(),
-                          )
-                        : Material(
-                            elevation: 1,
-                            shadowColor: Color(0xffb8b7ce),
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Color(0xffececf8),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: TextField(
-                                controller: searchTEController,
-                                onChanged: (value) {
-                                  initialSearch(value.toUpperCase());
-                                },
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  prefixIcon: Icon(Icons.search),
-                                  hint: Text("Search Username..."),
-                                ),
-                              ),
-                            ),
-                          ),
+                            itemCount: filteredDocs.length,
+                            itemBuilder: (context, index) {
+                              DocumentSnapshot ds = filteredDocs[index];
+                              return buildResultCard(ds);
+                            },
+                          );
+                        } else {
+                          return Container();
+                        }
+                      },
+                    ),
                     const SizedBox(height: 20),
                     Material(
                       elevation: 1,
@@ -287,22 +280,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildResultCard(data) {
+  Widget buildResultCard(DocumentSnapshot ds) {
     return GestureDetector(
       onTap: () async {
         search = false;
-        var chatRoomId = getChatRoomIdByUserName(myUserName!, data['userName']);
+        var chatRoomId = getChatRoomIdByUserName(myUserName!, ds['userName']);
         Map<String, dynamic> chatInfoMap = {
-          "users": [myUserName, data["userName"]],
+          "users": [myUserName, ds["userName"]],
         };
         await DatabaseMethods().createChatRoom(chatRoomId, chatInfoMap);
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ChatScreen(
-              name: data["Name"],
-              profileUrl: data["Image"],
-              userName: data["userName"],
+              name: ds["Name"],
+              profileUrl: ds["Image"],
+              userName: ds["userName"],
             ),
           ),
         );
@@ -323,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(60),
                   child: Image.network(
-                    data["Image"],
+                    ds["Image"],
                     height: 70,
                     width: 70,
                     fit: BoxFit.cover,
@@ -335,7 +328,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     const SizedBox(height: 10),
                     Text(
-                      data["Name"],
+                      ds["Name"],
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.black,
@@ -344,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     Text(
-                      data["userName"],
+                      ds["userName"],
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Color.fromARGB(151, 0, 0, 0),

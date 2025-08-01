@@ -96,7 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   SizedBox(width: MediaQuery.of(context).size.width / 5.2),
                   Text(
-                    "Aminul Islam",
+                    widget.name,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -207,16 +207,21 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                           ),
                           const SizedBox(width: 10,),
-                          Container(
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Color(0xff703eff),
-                              borderRadius: BorderRadius.circular(60),
-                            ),
-                            child: Icon(
-                              Icons.send,
-                              size: 30,
-                              color: Colors.white,
+                          GestureDetector(
+                            onTap: () {
+                              addMessage(true);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Color(0xff703eff),
+                                borderRadius: BorderRadius.circular(60),
+                              ),
+                              child: Icon(
+                                Icons.send,
+                                size: 30,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ],

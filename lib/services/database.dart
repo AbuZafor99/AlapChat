@@ -26,16 +26,16 @@ class DatabaseMethods {
     Map<String, dynamic> lastMessageInfoMap,
   ) async {
     return FirebaseFirestore.instance
-        .collection("Chatrooms")
+        .collection("chatrooms")
         .doc(chatRoomId)
         .set(lastMessageInfoMap);
   }
 
-  Future<QuerySnapshot> Search(String username) async {
+  Stream<QuerySnapshot> searchUsers(String username) {
     return FirebaseFirestore.instance
         .collection("users")
         .where("SearchKey", isEqualTo: username.substring(0, 1).toUpperCase())
-        .get();
+        .snapshots();
   }
 
   createChatRoom(
@@ -57,3 +57,4 @@ class DatabaseMethods {
     }
   }
 }
+
