@@ -1,4 +1,5 @@
 import 'package:chatting_app_flutter_firebase/services/database.dart';
+import 'package:chatting_app_flutter_firebase/services/shared_pref.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,14 @@ class AuthMethods {
 
     UserCredential result = await firebaseAuth.signInWithCredential(credential);
     User? userDetails = result.user;
+    String userName=userDetails!.email!.replaceAll("@gmail.com", "");
+    String firstletter =userName.substring(0,1).toUpperCase();
+
+    await SharedPreferenceHelper().saveUserDisplayName(userDetails.displayName!);
+    await SharedPreferenceHelper().saveUserImage(userDetails.photoURL!);
+    await SharedPreferenceHelper().saveUserEmail(userDetails.email!);
+    await SharedPreferenceHelper().saveUserId(userDetails.uid);
+    await SharedPreferenceHelper().saveUserName(userName);
 
     if (result != null) {
       Map<String, dynamic> userInfoMap = {
@@ -35,6 +44,8 @@ class AuthMethods {
         "Email": userDetails!.email,
         "Image": userDetails.photoURL,
         "Id": userDetails.uid,
+        "userName":userName.toUpperCase(),
+        "SearchKey":firstletter
       };
       await DatabaseMethods().addUser(userInfoMap, userDetails!.uid).then((
         value,

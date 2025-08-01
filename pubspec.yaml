@@ -20,6 +20,7 @@ dependencies:
   random_string:
   firebase_auth:
   google_sign_in: ^6.1.6
+  shared_preferences: ^2.5.3
 
 
 dev_dependencies:
